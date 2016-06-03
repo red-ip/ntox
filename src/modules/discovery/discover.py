@@ -10,8 +10,6 @@ from pysnmp.entity.rfc3413.oneliner import cmdgen
 import ipaddress
 from threading import Thread
 import src.modules.discovery.switch as myswitch
-import nmap
-from netaddr import IPNetwork
 from netmiko import ConnectHandler
 
 
@@ -90,43 +88,3 @@ class Discover:
         output = net_connect.send_command("show vlan")
         print(output)
 
-
-
-
-
-
-
-
-        #def start_nmap(self):
-    #    nm = nmap.PortScanner()             # instantiate nmap.PortScanner object
-    #    print('----------------------------------------------------')
-    #    # If you want to do a pingsweep on network 192.168.1.0/24:
-    #    nm.scan(hosts='192.168.180.0/24', arguments='-sP 161')
-    #    hosts_list = [(x, nm[x]['status']['state']) for x in nm.all_hosts()]
-    #    for host, status in hosts_list:
-    #        print('{0}:{1}'.format(host, status))##
-
-#
- #       print('----------------------------------------------------')
- #       # Asynchronous usage of PortScannerAsync
- #       nma = nmap.PortScannerAsync()
- #       def callback_result(host, scan_result):
- #           print('------------------')
- #           print(host, scan_result)
- #       nma.scan(hosts='192.168.100.0/24', arguments='-sP', callback=callback_result)
- #       while nma.still_scanning():
- #           print("Waiting ...")
-  #          nma.wait(2)   # you can do whatever you want but I choose to wait after the end of the scan
-
-  #  def my_scann(self):
-  #      nm = nmap.PortScanner()
-  #      for loop_1 in IPNetwork('192.168.100.0/24'):
-  #          (nm.scan(loop_1.format(), '22')).get('state')
-  #          try:
-  #              state = (nm[loop_1.format()]['tcp'][22]['state'])
-  #              if state == "open":
-  #                  print(loop_1, " IS ", state)
-  #              elif state == "closed":
-  #                  pass
-  #          except KeyError as e:
-  #              print(e)
