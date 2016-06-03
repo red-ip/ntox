@@ -12,6 +12,7 @@ from threading import Thread
 import src.modules.discovery.switch as myswitch
 import nmap
 from netaddr import IPNetwork
+from netmiko import ConnectHandler
 
 
 class Discover:
@@ -39,11 +40,14 @@ class Discover:
                 cmdgen.UdpTransportTarget((str(host), 161), timeout=0.1, retries=0),
                 '1.3.6.1.2.1.1.1.0',
         )
-        # Check for errors and print out results
+    # Check for errors and print out results
         self.counter = self.counter+1
         if not (errorIndication):
             if not (errorStatus):
                 for name, val in varBinds:
+                    print(host)
+                    print(val)
+                    print(name)
                     self.snmp_list.append((host, val.prettyPrint()))
 
 
@@ -61,40 +65,68 @@ class Discover:
 
         for snmp_dev in self.snmp_list:
             tmp_switch = myswitch.Switch(str(self.fingerprint(str(snmp_dev))), str(snmp_dev[0]))
+            print(tmp_switch.get_ip())
+            print(tmp_switch.get_manufacturer())
             #TODO: Get credentials from somewhere
             tmp_switch.set_login('RO', 'coselose!#')
             self.devices.append(tmp_switch)
-
-    def start_nmap(self):
-        nm = nmap.PortScanner()             # instantiate nmap.PortScanner object
-        print('----------------------------------------------------')
-        # If you want to do a pingsweep on network 192.168.1.0/24:
-        nm.scan(hosts='192.168.180.0/24', arguments='-sP 161')
-        hosts_list = [(x, nm[x]['status']['state']) for x in nm.all_hosts()]
-        for host, status in hosts_list:
-            print('{0}:{1}'.format(host, status))
+            self.ssh_connection(tmp_switch)
 
 
-        print('----------------------------------------------------')
-        # Asynchronous usage of PortScannerAsync
-        nma = nmap.PortScannerAsync()
-        def callback_result(host, scan_result):
-            print('------------------')
-            print(host, scan_result)
-        nma.scan(hosts='192.168.100.0/24', arguments='-sP', callback=callback_result)
-        while nma.still_scanning():
-            print("Waiting ...")
-            nma.wait(2)   # you can do whatever you want but I choose to wait after the end of the scan
+    # Connect to device
+    def ssh_connection(self, switch):
+        switch_avaya = {
+            'device_type': 'avaya_ers',
+            'ip': '192.168.100.10',
+            'username': 'RW',
+            'password': 'nosejose!#',
+        }
+        print('initialize connection...')
+        net_connect = ConnectHandler(**switch_avaya)
+        print(net_connect.find_prompt())
+        print(net_connect.send_command("ena"))
+        net_connect.send_command("conf t")
+        net_connect.send_command("vlan delete 999")
+        output = net_connect.send_command("show vlan")
+        print(output)
 
-    def my_scann(self):
-        nm = nmap.PortScanner()
-        for loop_1 in IPNetwork('192.168.100.0/24'):
-            (nm.scan(loop_1.format(), '22')).get('state')
-            try:
-                state = (nm[loop_1.format()]['tcp'][22]['state'])
-                if state == "open":
-                    print(loop_1, " IS ", state)
-                elif state == "closed":
-                    pass
-            except KeyError as e:
-                print(e)
+
+
+
+
+
+
+
+        #def start_nmap(self):
+    #    nm = nmap.PortScanner()             # instantiate nmap.PortScanner object
+    #    print('----------------------------------------------------')
+    #    # If you want to do a pingsweep on network 192.168.1.0/24:
+    #    nm.scan(hosts='192.168.180.0/24', arguments='-sP 161')
+    #    hosts_list = [(x, nm[x]['status']['state']) for x in nm.all_hosts()]
+    #    for host, status in hosts_list:
+    #        print('{0}:{1}'.format(host, status))##
+
+#
+ #       print('----------------------------------------------------')
+ #       # Asynchronous usage of PortScannerAsync
+ #       nma = nmap.PortScannerAsync()
+ #       def callback_result(host, scan_result):
+ #           print('------------------')
+ #           print(host, scan_result)
+ #       nma.scan(hosts='192.168.100.0/24', arguments='-sP', callback=callback_result)
+ #       while nma.still_scanning():
+ #           print("Waiting ...")
+  #          nma.wait(2)   # you can do whatever you want but I choose to wait after the end of the scan
+
+  #  def my_scann(self):
+  #      nm = nmap.PortScanner()
+  #      for loop_1 in IPNetwork('192.168.100.0/24'):
+  #          (nm.scan(loop_1.format(), '22')).get('state')
+  #          try:
+  #              state = (nm[loop_1.format()]['tcp'][22]['state'])
+  #              if state == "open":
+  #                  print(loop_1, " IS ", state)
+  #              elif state == "closed":
+  #                  pass
+  #          except KeyError as e:
+  #              print(e)
