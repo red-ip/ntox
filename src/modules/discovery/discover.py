@@ -19,7 +19,7 @@ class Discover:
     snmp_list = []
     threads = []
     devices = []
-    vendors = ["Avaya", "Cisco", "Meraki", "Nortel", "Juniper"]
+    vendors = ["Avaya", "Cisco", "Meraki", "Nortel", "Juniper", "Aruba"]
     counter = 1
 
     def __init__(self, subnet, cidr):
@@ -83,8 +83,8 @@ class Discover:
         net_connect = ConnectHandler(**switch_avaya)
         print(net_connect.find_prompt())
         print(net_connect.send_command("ena"))
-        net_connect.send_command("conf t")
-        net_connect.send_command("vlan delete 999")
+        # net_connect.send_command("conf t")
+        # net_connect.send_command("vlan delete 999")
         output = net_connect.send_command("show vlan")
         print(output)
 
